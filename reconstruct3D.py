@@ -181,3 +181,7 @@ class reconstructed3D:
 			self.data_map_colors = np.concatenate((self.data_map_colors, self.cur_map_colors))
 	def write_output_data(self):
 		create_output(self.data_map_points, self.data_map_colors, self.output_file)
+
+	def clear_data(self):
+		self.data_map_points = None
+		self.data_map_colors = None
