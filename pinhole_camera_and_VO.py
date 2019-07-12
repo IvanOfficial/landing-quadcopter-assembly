@@ -45,7 +45,7 @@ class PinholeCamera:
 
 
 class VisualOdometry:
-    def __init__(self, cam, poses):
+    def __init__(self, cam):
         self.frame_stage = 0
         self.cam = cam
         self.new_frame, self.last_frame = None, None
@@ -95,7 +95,7 @@ class VisualOdometry:
         self.frame_stage = STAGE_DEFAULT_FRAME 
         self.px_ref = self.px_cur
 
-    def update(self, img, frame_id):
+    def update(self, img):
         assert(img.ndim==2 and img.shape[0]==self.cam.height and 
                img.shape[1]==self.cam.width), "Error"
         self.new_frame = img
