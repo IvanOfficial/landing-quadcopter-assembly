@@ -172,7 +172,7 @@ class reconstructed3D:
 		return self.cur_map_points, self.cur_map_colors
 
 
-	def add_to_base(self):
+	def add_to_data(self):
 		if (type(self.data_map_points) is not np.ndarray):
 			self.data_map_points = self.cur_map_points
 			self.data_map_colors = self.cur_map_colors
