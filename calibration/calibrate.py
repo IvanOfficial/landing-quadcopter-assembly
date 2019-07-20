@@ -4,7 +4,7 @@ import glob
 from tqdm import tqdm
 import PIL.ExifTags
 import PIL.Image
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 
 #============================================
@@ -38,8 +38,8 @@ for image_path in tqdm(calibration_paths):
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     print("Image loaded, Analizying...")
     #find chessboard corners
-    plt.imshow(gray_image)
-    plt.show()
+    #plt.imshow(gray_image)
+    #plt.show()
     ret,corners = cv2.findChessboardCorners(gray_image, chessboard_size, None)
 
     if ret == True:
@@ -63,7 +63,7 @@ np.save("./camera_params/rvecs", rvecs)
 np.save("./camera_params/tvecs", tvecs)
 
 
-focal_length = 3.99
+focal_length = 8
 
 #Save focal length
 np.save("./camera_params/FocalLength", focal_length)
