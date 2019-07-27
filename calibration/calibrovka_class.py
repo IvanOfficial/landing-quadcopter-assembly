@@ -24,6 +24,7 @@ class calibrator:
         self.obj_points = None
         self.imagePoints1 = None
         self.gray_image_shape = None
+        self.image_size = None
 
     def save_params(self):
         # Save parameters into numpy file
@@ -82,6 +83,8 @@ class calibrator:
                 img_points.append(corners)
                 y += 1
             t += 1
+        h, w = img_2.shape[:2]
+        self.image_size = (h,w)
         self.detected = y
         self.count = t
         # Calibrate camera
@@ -133,4 +136,5 @@ class stereo_calibrator:
         np.save(link + "T", T)
         np.save(link + "E", E)
         np.save(link + "F", F)
+        np.save(link + "image_size", self.calibrovka_left.image_size)
         print("================ Stereocalibration was successful  =================")
