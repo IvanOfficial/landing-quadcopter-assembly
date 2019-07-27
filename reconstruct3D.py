@@ -185,3 +185,11 @@ class reconstructed3D:
 	def clear_data(self):
 		self.data_map_points = None
 		self.data_map_colors = None
+
+	def add_to_data_this(self, mas_points, mas_colors):
+		if (type(self.data_map_points) is not np.ndarray):
+			self.data_map_points = mas_points
+			self.data_map_colors = mas_colors
+		else:
+			self.data_map_points = np.concatenate((self.data_map_points, mas_points))
+			self.data_map_colors = np.concatenate((self.data_map_colors, mas_colors))
