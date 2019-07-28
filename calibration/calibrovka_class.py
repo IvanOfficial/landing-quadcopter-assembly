@@ -83,7 +83,7 @@ class calibrator:
                 img_points.append(corners)
                 y += 1
             t += 1
-        h, w = img_2.shape[:2]
+        h, w = image.shape[:2]
         self.image_size = (h,w)
         self.detected = y
         self.count = t
