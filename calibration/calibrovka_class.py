@@ -6,6 +6,7 @@ import PIL.ExifTags
 import PIL.Image
 import matplotlib.pyplot as plt
 from tqdm import tqdm_notebook
+from tqdm import tqdm
 
 
 class calibrator:
@@ -25,6 +26,8 @@ class calibrator:
         self.imagePoints1 = None
         self.gray_image_shape = None
         self.image_size = None
+        self.detected_image_list = []
+        self.line_to_images_new = './calibration_images/new/' + number_cam + '/*'
 
     def save_params(self):
         # Save parameters into numpy file
@@ -56,12 +59,14 @@ class calibrator:
         objp[:, :2] = np.mgrid[0:chessboard_size[0], 0:chessboard_size[1]].T.reshape(-1, 2)
 
         # read images
-        line = self.line_to_images
+        line = self.line_to_images_new
         calibration_paths = glob.glob(line)
         t = 0
         y = 0
         # Iterate over images to find intrinsic matrix
-        for image_path in tqdm_notebook(calibration_paths):
+        #for image_path in tqdm_notebook(calibration_paths):
+        print("Calibration ..." + "\n" + "camera: " + self.number_cam)
+        for image_path in tqdm(calibration_paths):
 
             # Load image
             image = cv2.imread(image_path)
@@ -81,6 +86,7 @@ class calibrator:
                 cv2.cornerSubPix(gray_image, corners, (5, 5), (-1, -1), criteria)
                 obj_points.append(objp)
                 img_points.append(corners)
+                self.detected_image_list.append(image_path)
                 y += 1
             t += 1
         h, w = image.shape[:2]
@@ -100,20 +106,43 @@ class calibrator:
     def calibration_cam(self):
         self.calibration_()
         self.save_params()
-        print("There were only images: " + str(self.count) + "\n" + "there were a total of images found" + str(
+        print("There were only images: " + str(self.count) + "\n" + "There were a total of images found: " + str(
             self.detected))
+
+
+    def make_detected_image_list(self):
+
+        # read images
+        line = self.line_to_images
+        calibration_paths = glob.glob(line)
+        chessboard_size = (6, 9)
+        print("Make detected_image_list, camera: " + self.number_cam)
+        for image_path in tqdm(calibration_paths):
+
+            # Load image
+            image = cv2.imread(image_path)
+            gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            ret, corners = cv2.findChessboardCorners(gray_image, chessboard_size, None)
+
+            if ret == True:
+                self.detected_image_list.append(image_path)
+
 
 
 class stereo_calibrator:
     def __init__(self, number_cam_left, number_cam_right, fl_left, fl_right):
         self.number_cam_left = number_cam_left
         self.number_cam_right = number_cam_right
+        self.link_to_recreate = './calibration_images/new/'
         self.calibrovka_left = calibrator(number_cam_left, fl_left)
         self.calibrovka_right = calibrator(number_cam_right, fl_right)
 
-    def stereo_calibration(self):
+    def stereo_calibration_separately(self):
         self.calibrovka_left.calibration_cam()
         self.calibrovka_right.calibration_cam()
+
+
+    def stereo_calibration_together(self):
         ret, K_left, dist_left, K_right, dist_right, R, T, E, F = cv2.stereoCalibrate(
             objectPoints=self.calibrovka_left.obj_points,
             imagePoints1=self.calibrovka_left.img_points,
@@ -138,3 +167,25 @@ class stereo_calibrator:
         np.save(link + "F", F)
         np.save(link + "image_size", self.calibrovka_left.image_size)
         print("================ Stereocalibration was successful  =================")
+
+    def stereo_calibration(self):
+    	self.selection()
+    	#self.stereo_calibration_separately()
+    	#self.stereo_calibration_together()
+    	
+    def re_create_data_images(self):
+    	ll = self.calibrovka_left.detected_image_list
+    	lr = self.calibrovka_right.detected_image_list
+    	print("Re-create data images")
+    	for l in tqdm(ll):
+    		if l in lr:
+    			image_left = cv2.imread(self.calibrovka_left.line_to_images + l)
+    			image_right = cv2.imread(self.calibrovka_right.line_to_images + l)
+    			cv2.imwrite(self.link_to_recreate + self.calibrovka_left.number_cam + '/' + l, image_left)
+    			cv2.imwrite(self.link_to_recreate + self.calibrovka_right.number_cam + '/' + l, image_right)
+
+    def selection(self):
+    	self.calibrovka_left.make_detected_image_list()
+    	self.calibrovka_right.make_detected_image_list()
+    	self.re_create_data_images()
+
