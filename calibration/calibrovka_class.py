@@ -61,6 +61,7 @@ class calibrator:
         # read images
         line = self.line_to_images_new
         calibration_paths = glob.glob(line)
+        calibration_paths.sort()
         t = 0
         y = 0
         # Iterate over images to find intrinsic matrix
@@ -125,7 +126,7 @@ class calibrator:
             ret, corners = cv2.findChessboardCorners(gray_image, chessboard_size, None)
 
             if ret == True:
-                self.detected_image_list.append(image_path)
+                self.detected_image_list.append(image_path[len(self.line_to_images)-1:])
 
 
 
@@ -170,19 +171,21 @@ class stereo_calibrator:
 
     def stereo_calibration(self):
     	self.selection()
-    	#self.stereo_calibration_separately()
-    	#self.stereo_calibration_together()
+    	self.stereo_calibration_separately()
+    	self.stereo_calibration_together()
     	
     def re_create_data_images(self):
-    	ll = self.calibrovka_left.detected_image_list
-    	lr = self.calibrovka_right.detected_image_list
-    	print("Re-create data images")
-    	for l in tqdm(ll):
-    		if l in lr:
-    			image_left = cv2.imread(self.calibrovka_left.line_to_images + l)
-    			image_right = cv2.imread(self.calibrovka_right.line_to_images + l)
-    			cv2.imwrite(self.link_to_recreate + self.calibrovka_left.number_cam + '/' + l, image_left)
-    			cv2.imwrite(self.link_to_recreate + self.calibrovka_right.number_cam + '/' + l, image_right)
+        ll = self.calibrovka_left.detected_image_list
+        lr = self.calibrovka_right.detected_image_list
+        print("Re-create data images")
+
+        for l in tqdm(ll):
+            if l in lr:
+                
+                image_left = cv2.imread(self.calibrovka_left.line_to_images[:-1] + l)
+                image_right = cv2.imread(self.calibrovka_right.line_to_images[:-1] + l)
+                cv2.imwrite(self.link_to_recreate + self.calibrovka_left.number_cam + '/' + l, image_left)
+                cv2.imwrite(self.link_to_recreate + self.calibrovka_right.number_cam + '/' + l, image_right)
 
     def selection(self):
     	self.calibrovka_left.make_detected_image_list()
